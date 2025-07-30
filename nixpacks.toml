@@ -1,0 +1,3 @@
+[build]
+nixPkgs = ["chromium", "chromedriver"]
+
