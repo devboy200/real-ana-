@@ -10,17 +10,24 @@ from selenium.webdriver.support.ui import WebDriverWait
 from discord.ext import tasks
 from dotenv import load_dotenv
 
+# Load environment variables
 load_dotenv()
+DISCORD_BOT_TOKEN = os.getenv("DISCORD_BOT_TOKEN")
+raw_voice_channel_id = os.getenv("VOICE_CHANNEL_ID")
 
-def get_clean_env(name: str, required: bool = True) -> str:
-    val = os.getenv(name)
-    if not val and required:
-        raise ValueError(f"{name} environment variable not set!")
-    return val.strip().replace('"', '').replace("'", "")
+# Debug logs to verify environment
+print(f"✅ DISCORD_BOT_TOKEN loaded: {'Yes' if DISCORD_BOT_TOKEN else 'No'}")
+print(f"✅ VOICE_CHANNEL_ID raw value: {raw_voice_channel_id}")
 
-DISCORD_BOT_TOKEN = get_clean_env("DISCORD_BOT_TOKEN")
-VOICE_CHANNEL_ID = int(get_clean_env("VOICE_CHANNEL_ID"))
+# Handle VOICE_CHANNEL_ID safely
+if not raw_voice_channel_id:
+    raise ValueError("❌ VOICE_CHANNEL_ID is not set in the environment!")
+try:
+    VOICE_CHANNEL_ID = int(raw_voice_channel_id.strip())
+except ValueError:
+    raise ValueError(f"❌ VOICE_CHANNEL_ID is not a valid integer: {raw_voice_channel_id}")
 
+# Setup Discord client
 intents = discord.Intents.default()
 intents.guilds = True
 intents.voice_states = True
@@ -74,7 +81,7 @@ async def update_bot_status():
                 print(f"🔁 Updated channel name to ANA: {price}")
                 last_price = price
             else:
-                print("⚠️ Voice channel not found.")
+                print("⚠️ Voice channel not found or incorrect type.")
         else:
             print("⏸️ No price change or failed fetch.")
     except Exception as e:
