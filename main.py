@@ -11,8 +11,15 @@ from discord.ext import tasks
 from dotenv import load_dotenv
 
 load_dotenv()
-DISCORD_BOT_TOKEN = os.getenv("DISCORD_BOT_TOKEN")
-VOICE_CHANNEL_ID = int(os.getenv("VOICE_CHANNEL_ID"))
+
+def get_clean_env(name: str, required: bool = True) -> str:
+    val = os.getenv(name)
+    if not val and required:
+        raise ValueError(f"{name} environment variable not set!")
+    return val.strip().replace('"', '').replace("'", "")
+
+DISCORD_BOT_TOKEN = get_clean_env("DISCORD_BOT_TOKEN")
+VOICE_CHANNEL_ID = int(get_clean_env("VOICE_CHANNEL_ID"))
 
 intents = discord.Intents.default()
 intents.guilds = True
@@ -72,20 +79,20 @@ async def update_bot_status():
             print("⏸️ No price change or failed fetch.")
     except Exception as e:
         print(f"⚠️ Error updating status: {e}")
-
+        
 @client.event
 async def on_ready():
     print(f"✅ Logged in as {client.user}")
     update_bot_status.start()
-
+    
 @client.event
 async def on_disconnect():
     print("⚠️ Bot disconnected")
-
+        
 @client.event
 async def on_resumed():
     print("🔄 Reconnected to Discord")
-
+    
 print("🚀 Starting bot...")
 client.run(DISCORD_BOT_TOKEN)
 
